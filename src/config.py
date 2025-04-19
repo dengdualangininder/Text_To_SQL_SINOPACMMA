@@ -1,0 +1,1 @@
+COMPANYKEY = "6224" #UAT圓徑的帳號
