@@ -1,1 +1,1 @@
-SELECT COUNT(員工編號), 部門  FROM  員工薪資  WHERE 公司金鑰 = '6224' GROUP BY 部門
+SELECT *  FROM  員工薪資  WHERE 公司金鑰 = '6224';
