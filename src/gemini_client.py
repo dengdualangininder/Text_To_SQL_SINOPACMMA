@@ -12,12 +12,13 @@ if not GEMINI_API_KEY:
     print("Please set the GEMINI_API_KEY environment variable in the .env file.")
     exit()
 
-def generate_sql(natural_language_query, schema_info):
+def generate_sql(natural_language_query, schema_info, temperature=0.0):
     """
     Generates an SQL query from a natural language query and database schema information using the Gemini API.
     Args:
         natural_language_query (str): The natural language query.
         schema_info (dict): A dictionary containing the database schema information.
+        temperature (float): The temperature for the Gemini API.
     Returns:
         str: The generated SQL query.
     """
@@ -39,7 +40,7 @@ def generate_sql(natural_language_query, schema_info):
         model = genai.GenerativeModel('gemini-2.0-flash')
 
         # Generate content using the Gemini API
-        response = model.generate_content(prompt)
+        response = model.generate_content(prompt, generation_config={"temperature": temperature})
 
         # Extract the generated SQL query from the response
         sql_query = response.text.strip()
@@ -48,6 +49,33 @@ def generate_sql(natural_language_query, schema_info):
 
     except Exception as e:
         error_message = f"Error generating SQL query: {e}"
+        print(error_message)
+        return None
+
+def generate_description(prompt, temperature=0.0): #設定termperature=0確保一致性
+    """
+    Generates a conversational description using the Gemini API.
+    Args:
+        prompt (str): The prompt for the Gemini API.
+        temperature (float): The temperature for the Gemini API.
+    Returns:
+        str: The generated conversational description.
+    """
+    try:
+        # Configure the Gemini API
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-2.0-flash')
+
+        # Generate content using the Gemini API
+        response = model.generate_content(prompt, generation_config={"temperature": temperature})
+
+        # Extract the generated conversational description from the response
+        description = response.text.strip()
+
+        return description
+
+    except Exception as e:
+        error_message = f"Error generating conversational description: {e}"
         print(error_message)
         return None
 

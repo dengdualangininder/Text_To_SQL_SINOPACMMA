@@ -25,20 +25,23 @@ def create_table(conn, table_sql):
 def populate_salaries(conn, company_key, num_records=5):
     """Populates the 員工薪資 table with fake data."""
     sql = """
-    INSERT INTO 員工薪資 (員工編號, 員工姓名, 薪資, 部門, 公司金鑰, 薪資日期)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO 員工薪資 (員工編號, 員工姓名, 薪資, 部門, 職稱, 到職日期, 公司金鑰, 薪資日期)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """
     cur = conn.cursor()
-    for i in range(num_records):
+    employee_names = ["Johnny Hsiao", "Mark Wu", "Jerry Chang", "Grace Chen"]
+    job_titles = ["Engineer", "Manager", "Analyst", "Developer", "Designer", "Tester"]
+    departments = ["Sales", "Marketing", "Engineering", "HR", "IT", "Finance", "Research", "Operations"]
+    for i in range(min(num_records, len(employee_names))):
         employee_id = i + 1
-        employee_name = f"員工 {i+1}"
+        employee_name = employee_names[i]
         salary = round(random.uniform(50000, 150000), 2)
-        departments = ["Sales", "Marketing", "Engineering", "HR"]
-        department = random.choice(departments)
-        company_keys = ["6224", "6225", "6226"]
-        company_key = random.choice(company_keys)
+        department = departments[i % len(departments)]
+        job_title = random.choice(job_titles)
+        hire_date = f"{random.randint(2020, 2024)}-{random.randint(1, 12):02}-{random.randint(1, 28):02}"
         salary_date = f"2024-{random.randint(1, 12):02}-{random.randint(1, 28):02}"
-        values = (employee_id, employee_name, salary, department, company_key, salary_date)
+        current_company_key = company_key if i == 0 else random.choice(["6224", "6225", "6226"])
+        values = (employee_id, employee_name, salary, department, job_title, hire_date, current_company_key, salary_date)
         cur.execute(sql, values)
     conn.commit()
     print("Populated 員工薪資 table")
@@ -49,19 +52,21 @@ def populate_salaries(conn, company_key, num_records=5):
 def populate_departments(conn, company_key, num_records=2):
     """Populates the 部門資訊 table with fake data."""
     sql = """
-    INSERT INTO 部門資訊 (部門編號, 部門名稱, 地點, 公司金鑰)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO 部門資訊 (部門編號, 部門名稱, 部門主管, 部門人數, 地點, 公司金鑰)
+    VALUES (?, ?, ?, ?, ?, ?)
     """
     cur = conn.cursor()
-    departments = ["Sales", "Marketing", "Engineering", "HR"]
-    locations = ["New York", "London", "Tokyo", "Sydney"]
-    company_keys = ["6224", "6225", "6226"]
+    departments = ["Sales", "Marketing", "Engineering", "HR", "IT", "Finance", "Research", "Operations"]
+    locations = ["New York", "London", "Tokyo", "Sydney", "Paris", "Berlin", "Singapore", "Hong Kong"]
+    managers = ["Coolsen", "CT Pan"]
     for i in range(num_records):
         department_id = i + 1
         department_name = departments[i] if i < len(departments) else "Other"
+        manager = managers[i % len(managers)]
+        employee_count = random.randint(5, 50)
         location = random.choice(locations)
-        company_key = random.choice(company_keys)
-        values = (department_id, department_name, location, company_key)
+        current_company_key = company_key if i == 0 else random.choice(["6224", "6225", "6226"])
+        values = (department_id, department_name, manager, employee_count, location, current_company_key)
         cur.execute(sql, values)
     conn.commit()
     print("Populated 部門資訊 table")
@@ -119,6 +124,8 @@ def main():
             員工姓名 TEXT,
             薪資 REAL,
             部門 TEXT,
+            職稱 TEXT,
+            到職日期 TEXT,
             公司金鑰 TEXT,
             薪資日期 TEXT
         );
@@ -128,6 +135,8 @@ def main():
         CREATE TABLE IF NOT EXISTS 部門資訊 (
             部門編號 INTEGER PRIMARY KEY,
             部門名稱 TEXT,
+            部門主管 TEXT,
+            部門人數 INTEGER,
             地點 TEXT,
             公司金鑰 TEXT
         );
@@ -147,9 +156,9 @@ def main():
         create_table(conn, departments_table_sql)
 
         # Populate tables with fake data
-        company_key = "6224"  # Replace with your actual company key
-        populate_salaries(conn, company_key)
-        populate_departments(conn, company_key)
+        company_keys = ["6224", "6225", "6226"]
+        populate_salaries(conn, random.choice(company_keys))
+        populate_departments(conn, random.choice(company_keys))
 
         # Display table data
         display_table_data(conn, "員工薪資")

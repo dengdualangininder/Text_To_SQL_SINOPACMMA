@@ -6,12 +6,14 @@ import os
 from dotenv import load_dotenv
 import schema_parser
 import re
+import datetime
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Gemini API Key
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
 if not GEMINI_API_KEY:
     st.error("Please set the GEMINI_API_KEY environment variable in the .env file.")
     st.stop()
@@ -36,7 +38,7 @@ def query_database(sql_query):
             conn.close()
 
 def main():
-    st.title("MMAQube-text to SQL 查詢系統")
+    st.title("CorpQuery-智能數據引擎")
 
     # User input for natural language query
     natural_language_query = st.text_input("請輸入查詢：")
@@ -45,17 +47,21 @@ def main():
         # Define a more comprehensive schema for the Gemini API
         schema_info = {
             "員工薪資": [
-                {"name": "員工編號", "type": "INTEGER", "description": "員工的唯一識別碼 (INTEGER, PRIMARY KEY, Example: 123)"},
-                {"name": "員工姓名", "type": "TEXT", "description": "員工的姓名 (TEXT, Example: 王小明)"},
-                {"name": "薪資", "type": "REAL", "description": "員工的薪資 (REAL, Example: 50000)"},
-                {"name": "部門", "type": "TEXT", "description": "員工所屬的部門 (TEXT, Example: Sales)"},
+                {"name": "員工編號", "type": "INTEGER", "description": "員工的唯一識別碼 (INTEGER, PRIMARY KEY, Example: 12345)"},
+                {"name": "員工姓名", "type": "TEXT", "description": "員工的姓名 (TEXT, Example: 王小明, 李四, 張三)"},
+                {"name": "薪資", "type": "REAL", "description": "員工的薪資 (REAL, Example: 50000, 60000, 70000)"},
+                {"name": "部門", "type": "TEXT", "description": "員工所屬的部門 (TEXT, FOREIGN KEY referencing 部門資訊.部門名稱, Example: Sales, Marketing, Engineering)"},
+                {"name": "職稱", "type": "TEXT", "description": "員工的職稱 (TEXT, Example: Engineer, Manager, Analyst)"},
+                {"name": "到職日期", "type": "TEXT", "description": "員工的到職日期 (TEXT, YYYY-MM-DD, Example: 2022-01-01, 2023-05-15, 2024-03-10)"},
                 {"name": "公司金鑰", "type": "TEXT", "description": "公司的識別碼 (TEXT, Example: 6224)"},
                 {"name": "薪資日期", "type": "TEXT", "description": "薪資的日期 (TEXT, YYYY-MM-DD, Example: 2024-04-18)"}
             ],
             "部門資訊": [
-                {"name": "部門編號", "type": "INTEGER", "description": "部門的唯一識別碼 (INTEGER, PRIMARY KEY, Example: 1)"},
-                {"name": "部門名稱", "type": "TEXT", "description": "部門的名稱 (TEXT, Example: Sales)"},
-                {"name": "地點", "type": "TEXT", "description": "部門的地點 (TEXT, Example: New York)"},
+                {"name": "部門編號", "type": "INTEGER", "description": "部門的唯一識別碼 (INTEGER, PRIMARY KEY, Example: 1, 2, 3)"},
+                {"name": "部門名稱", "type": "TEXT", "description": "部門的名稱 (TEXT, Example: Sales, Marketing, Engineering)"},
+                {"name": "部門主管", "type": "TEXT", "description": "部門的主管姓名 (TEXT, Example: 陳經理, 林主任, 黃組長)"},
+                {"name": "部門人數", "type": "INTEGER", "description": "部門的員工總數 (INTEGER, Example: 10, 20, 30)"},
+                {"name": "地點", "type": "TEXT", "description": "部門的地點 (TEXT, Example: New York, London, Tokyo)"},
                 {"name": "公司金鑰", "type": "TEXT", "description": "公司的識別碼 (TEXT, Example: 6224)"}
             ]
         }
@@ -75,9 +81,9 @@ def main():
             # Enforce 公司金鑰 condition
             company_key = config.COMPANYKEY
             # Enforce 公司金鑰 condition
-            sql_query = re.sub(r"WHERE\s+公司金鑰\s*=\s*('.*?')", f"WHERE 公司金鑰 = '{company_key}'", sql_query, flags=re.IGNORECASE)
+            sql_query = re.sub(r"公司金鑰\s*=\s*(\".*?\"|'.*?')", f"公司金鑰 = '{company_key}'", sql_query, flags=re.IGNORECASE)
             if "WHERE" not in sql_query.upper():
-                sql_query += f" AND 公司金鑰 = '{company_key}'"
+                sql_query = f"SELECT * FROM ({sql_query}) WHERE 公司金鑰 = '{company_key}'"
 
             # Extract employee number from the natural language query
             match = re.search(r"員工(\d+)", natural_language_query)
@@ -108,23 +114,32 @@ def main():
 
             # 1st Summarization
             with st.spinner("Generating conversational description..."):
-                description_prompt = f"""You are a helpful assistant that always responds in Traditional Chinese. 
+                now = datetime.datetime.now()
+                current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+                description_prompt = f"""You are a helpful assistant that always responds in Traditional Chinese. The current time is {current_time}.
 
-                Generate a conversational description of the following SQL query and results:
+                If the user's query involves calculating salaries "this month" or "currently", use the current date as the salary date.
 
-                SQL Query: {sql_query}
-
+                Generate a conversational description of the query results.
+                Do not include the SQL query in the description.
+                Do not mention anything about '公司金鑰'，user don't know what is '公司金鑰', just explain it is the filter that belong user's company.
+                User Natural language query: {natural_language_query}
                 Query Results: {results_string}
 
-                If the query returned no results, explain why there might be no data. If the query includes a filter on the '公司金鑰' column, suggest that the user may be trying to access data that does not belong to their organization, without explicitly mentioning the value of the '公司金鑰' column.
                 """
 
-                description = gemini_client.generate_sql(description_prompt, schema_info)
+                if results_string == "The SQL query returned no results.":
+                    description_prompt += """
+                    Explain why there might be no data.
+                    """
+
+                description = gemini_client.generate_description(description_prompt)
             print(f"1st description: {description}")
 
             if description:
                 # Display the results
                 st.write(description)
+                #st.write(results) Debug用
             else:
                 st.error("Failed to generate a conversational description of the query results.")
 

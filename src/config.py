@@ -1,1 +1,1 @@
-COMPANYKEY = "6224" #UAT圓徑的帳號
+COMPANYKEY = "6224" #測試用的公司金鑰
