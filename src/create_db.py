@@ -64,7 +64,7 @@ def populate_departments(conn, num_records=2):
     for i in range(num_records):
         department_id = i + 1
         department_name = departments[i] if i < len(departments) else "Other"
-        manager = managers[i % len(managers)]
+        manager = managers[i % (len(managers))]
         employee_count = random.randint(5, 50)
         location = random.choice(locations)
         company_key = "6224"
