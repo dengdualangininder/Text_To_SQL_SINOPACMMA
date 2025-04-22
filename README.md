@@ -106,4 +106,11 @@
 
 *   請確保已正確設定 `GEMINI_API_KEY` 環境變數。
 *   如果遇到任何錯誤，請檢查終端機輸出的錯誤訊息，並根據訊息內容進行調整。
-*   本專案僅為概念驗證，生成的 SQL 查詢語句可能不完全準確。
+*   本專案僅為概念驗證，生成的 SQL 查詢語句可能不完全準確.
+
+## Security Measures
+
+This system implements the following security measures to mitigate the risks of Prompt Injection and SQL Injection attacks:
+
+*   **Input Layer Protection:** Implements natural language filtering to prevent dangerous keywords (e.g., "ignore", "delete", "other companies") from being used in the user's query.
+*   **Prompt Engineering:** Enhances the system prompt template to include constraints that prevent the generation of DELETE/UPDATE statements and enforce the inclusion of a WHERE clause with the COMPANYKEY.

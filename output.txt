@@ -1,1 +1,1 @@
-SELECT T2.部門主管  FROM  員工薪資 AS T1 JOIN 部門資訊 AS T2 ON T1.部門 = T2.部門名稱  WHERE  T1.員工姓名 = 'Johnny Hsiao' AND T1.公司金鑰 = '6224';
+SELECT 員工姓名 FROM  員工薪資 WHERE  公司金鑰 = '6224';

@@ -9,6 +9,15 @@ import re
 import datetime
 import json
 
+# Security Exception
+class SecurityException(Exception):
+    pass
+
+def filter_user_input(user_input):
+    banned_phrases = ["忽略", "刪除", "其他公司", "ignore", "delete", "other companies"]
+    if any(phrase in user_input for phrase in banned_phrases):
+        raise SecurityException("檢測到危險指令")
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -69,6 +78,12 @@ def main():
 
     # User input for natural language query
     natural_language_query = st.text_input("請輸入查詢：", key="natural_language_query", value=st.session_state.natural_language_query)
+
+    try:
+        filter_user_input(natural_language_query)
+    except SecurityException as e:
+        st.error(str(e))
+        st.stop()
 
     # Define a more comprehensive schema for the Gemini API
     schema_info = {

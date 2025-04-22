@@ -2,6 +2,7 @@ import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import datetime
+import config
 
 # Load environment variables from .env file
 load_dotenv()
@@ -13,27 +14,11 @@ if not GEMINI_API_KEY:
     exit()
 
 def generate_sql(natural_language_query, schema_info, temperature=0.0):
-    """
-    Generates an SQL query from a natural language query and database schema information using the Gemini API.
-    Args:
-        natural_language_query (str): The natural language query.
-        schema_info (dict): A dictionary containing the database schema information.
-        temperature (float): The temperature for the Gemini API.
-    Returns:
-        str: The generated SQL query.
-    """
+    """Generates SQL query using Gemini API."""
     try:
-        # Construct the prompt for the Gemini API
-        prompt = f"""You are a helpful assistant that always responds in Traditional Chinese. 
-
-        Generate SQL query based on the following natural language query and database schema. Always include a WHERE clause to filter the results by the '公司金鑰' column. Return only a single SQL query. The 員工薪資 table has a foreign key relationship with the 部門資訊 table on the 部門 column.
-
-        Natural Language Query:
-        {natural_language_query}
-
-        Database Schema:
-        {schema_info}
-        """
+        schema = schema_info  # schema_parser.parse_schema(schema_info) #remove schema_parser
+        prompt = config.SQL_TEMPLATE.format(schema=schema, question=natural_language_query, COMPANYKEY=config.COMPANYKEY)
+        print(f"Prompt: {prompt}")
 
         # Configure the Gemini API
         genai.configure(api_key=GEMINI_API_KEY)
@@ -44,7 +29,6 @@ def generate_sql(natural_language_query, schema_info, temperature=0.0):
 
         # Extract the generated SQL query from the response
         sql_query = response.text.strip()
-
         return sql_query
 
     except Exception as e:
