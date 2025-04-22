@@ -22,7 +22,7 @@ def create_table(conn, table_sql):
     except sqlite3.Error as e:
         print(f"Error creating table: {e}")
 
-def populate_salaries(conn, company_key, num_records=5):
+def populate_salaries(conn, num_records=5):
     """Populates the 員工薪資 table with fake data."""
     sql = """
     INSERT INTO 員工薪資 (員工編號, 員工姓名, 薪資, 部門, 職稱, 到職日期, 公司金鑰, 薪資日期)
@@ -39,9 +39,11 @@ def populate_salaries(conn, company_key, num_records=5):
         department = departments[i % len(departments)]
         job_title = random.choice(job_titles)
         hire_date = f"{random.randint(2020, 2024)}-{random.randint(1, 12):02}-{random.randint(1, 28):02}"
-        salary_date = f"2024-{random.randint(1, 12):02}-{random.randint(1, 28):02}"
-        current_company_key = company_key if i == 0 else random.choice(["6224", "6225", "6226"])
-        values = (employee_id, employee_name, salary, department, job_title, hire_date, current_company_key, salary_date)
+        month = random.randint(1, 4)
+        day = random.randint(1, 22)
+        salary_date = f"2025-{month:02}-{day:02}"
+        company_key = random.choice(["6224", "6225", "6226"]) if i > 0 else "6224"
+        values = (employee_id, employee_name, salary, department, job_title, hire_date, company_key, salary_date)
         cur.execute(sql, values)
     conn.commit()
     print("Populated 員工薪資 table")
@@ -49,7 +51,7 @@ def populate_salaries(conn, company_key, num_records=5):
     count = cur.fetchone()[0]
     print(f"Number of rows in 員工薪資: {count}")
 
-def populate_departments(conn, company_key, num_records=2):
+def populate_departments(conn, num_records=2):
     """Populates the 部門資訊 table with fake data."""
     sql = """
     INSERT INTO 部門資訊 (部門編號, 部門名稱, 部門主管, 部門人數, 地點, 公司金鑰)
@@ -65,14 +67,44 @@ def populate_departments(conn, company_key, num_records=2):
         manager = managers[i % len(managers)]
         employee_count = random.randint(5, 50)
         location = random.choice(locations)
-        current_company_key = company_key if i == 0 else random.choice(["6224", "6225", "6226"])
-        values = (department_id, department_name, manager, employee_count, location, current_company_key)
+        company_key = "6224"
+        values = (department_id, department_name, manager, employee_count, location, company_key)
         cur.execute(sql, values)
     conn.commit()
     print("Populated 部門資訊 table")
     cur.execute("SELECT COUNT(*) FROM 部門資訊")
     count = cur.fetchone()[0]
     print(f"Number of rows in 部門資訊: {count}")
+
+def populate_twd_payment_details(conn, num_records=3):
+    """Populates the 臺幣單筆付款交易明細 table with fake data."""
+    sql = """
+    INSERT INTO 臺幣單筆付款交易明細 (付款金額, 費用類型, 付款人資訊, 收款人資訊, 交易日期, 公司金鑰, 付款備註)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """
+    cur = conn.cursor()
+    charge_types = ["Water Bill", "Electricity Bill", "Gas Bill"]
+    payer_info = ["John Smith", "David Lee", "Mary Chen"]
+    payee_info = ["Water Company", "Electric Company", "Gas Company"]
+    payment_memos = ["材料費", "辦公室租金", "廣告費", "水電費", "薪資"]
+    num_records = 20
+    for i in range(num_records):
+        payment_amount = round(random.uniform(100, 1000), 2)
+        charge_type = charge_types[i % len(charge_types)]
+        payer = payer_info[i % len(payer_info)]
+        payee = payee_info[i % len(payee_info)]
+        month = random.randint(1, 4)
+        day = random.randint(1, 22)
+        transaction_date = f"2025-{month:02}-{day:02}"
+        company_key = random.choice(["6224", "6225", "6226"])
+        payment_memo = payment_memos[i % len(payment_memos)]
+        values = (payment_amount, charge_type, payer, payee, transaction_date, company_key, payment_memo)
+        cur.execute(sql, values)
+    conn.commit()
+    print("Populated 臺幣單筆付款交易明細 table")
+    cur.execute("SELECT COUNT(*) FROM 臺幣單筆付款交易明細")
+    count = cur.fetchone()[0]
+    print(f"Number of rows in 臺幣單筆付款交易明細: {count}")
 
 def display_table_data(conn, table_name):
     """Displays all data from a table in the SQLite database."""
@@ -142,11 +174,24 @@ def main():
         );
         """
 
+        twd_payment_details_table_sql = """
+        CREATE TABLE IF NOT EXISTS 臺幣單筆付款交易明細 (
+            付款金額 REAL,
+            費用類型 TEXT,
+            付款人資訊 TEXT,
+            收款人資訊 TEXT,
+            交易日期 TEXT,
+            公司金鑰 TEXT,
+            付款備註 TEXT
+        );
+        """
+
         # Drop existing tables (if they exist)
         try:
             cur = conn.cursor()
             cur.execute("DROP TABLE IF EXISTS 員工薪資")
             cur.execute("DROP TABLE IF EXISTS 部門資訊")
+            cur.execute("DROP TABLE IF EXISTS 臺幣單筆付款交易明細")
             conn.commit()
         except sqlite3.Error as e:
             print(f"Error dropping tables: {e}")
@@ -154,19 +199,22 @@ def main():
         # Create tables
         create_table(conn, salaries_table_sql)
         create_table(conn, departments_table_sql)
+        create_table(conn, twd_payment_details_table_sql)
 
         # Populate tables with fake data
-        company_keys = ["6224", "6225", "6226"]
-        populate_salaries(conn, random.choice(company_keys))
-        populate_departments(conn, random.choice(company_keys))
+        populate_salaries(conn)
+        populate_departments(conn)
+        populate_twd_payment_details(conn)
 
         # Display table data
         display_table_data(conn, "員工薪資")
         display_table_data(conn, "部門資訊")
+        display_table_data(conn, "臺幣單筆付款交易明細")
 
         # Export to CSV
         export_to_csv(conn, "員工薪資", "員工薪資.csv")
         export_to_csv(conn, "部門資訊", "部門資訊.csv")
+        export_to_csv(conn, "臺幣單筆付款交易明細", "臺幣單筆付款交易明細.csv")
 
         conn.close()
     else:

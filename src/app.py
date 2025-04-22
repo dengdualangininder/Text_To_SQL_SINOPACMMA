@@ -63,6 +63,15 @@ def main():
                 {"name": "部門人數", "type": "INTEGER", "description": "部門的員工總數 (INTEGER, Example: 10, 20, 30)"},
                 {"name": "地點", "type": "TEXT", "description": "部門的地點 (TEXT, Example: New York, London, Tokyo)"},
                 {"name": "公司金鑰", "type": "TEXT", "description": "公司的識別碼 (TEXT, Example: 6224)"}
+            ],
+            "臺幣單筆付款交易明細": [
+                {"name": "付款金額", "type": "REAL", "description": "付款的金額 (REAL, Example: 100, 200, 300)"},
+                {"name": "費用類型", "type": "TEXT", "description": "費用的類型 (TEXT, Example: 水費, 電費, 瓦斯費)"},
+                {"name": "付款人資訊", "type": "TEXT", "description": "付款人的資訊 (TEXT, Example: John Smith, David Lee, Mary Chen)"},
+                {"name": "收款人資訊", "type": "TEXT", "description": "收款人的資訊 (TEXT, Example: Water Company, Electric Company, Gas Company)"},
+                {"name": "交易日期", "type": "TEXT", "description": "交易的日期 (TEXT, YYYY-MM-DD, Example: 2025-01-01, 2025-02-15, 2025-03-10)"},
+                {"name": "公司金鑰", "type": "TEXT", "description": "公司的識別碼 (TEXT, Example: 6224)"},
+                {"name": "付款備註", "type": "TEXT", "description": "付款的備註 (TEXT, Example: 材料費, 辦公室租金, 廣告費)"}
             ]
         }
 
