@@ -35,7 +35,7 @@ def populate_salaries(conn, num_records=5):
     for i in range(min(num_records, len(employee_names))):
         employee_id = i + 1
         employee_name = employee_names[i]
-        salary = round(random.uniform(50000, 150000), 2)
+        salary = random.randrange(50, 150, 10) * 1000
         department = departments[i % len(departments)]
         job_title = random.choice(job_titles)
         hire_date = f"{random.randint(2020, 2024)}-{random.randint(1, 12):02}-{random.randint(1, 28):02}"
@@ -60,7 +60,7 @@ def populate_departments(conn, num_records=2):
     cur = conn.cursor()
     departments = ["Sales", "Marketing", "Engineering", "HR", "IT", "Finance", "Research", "Operations"]
     locations = ["New York", "London", "Tokyo", "Sydney", "Paris", "Berlin", "Singapore", "Hong Kong"]
-    managers = ["Coolsen", "CT Pan"]
+    managers = ["Coolson", "CT Pan"]
     for i in range(num_records):
         department_id = i + 1
         department_name = departments[i] if i < len(departments) else "Other"
@@ -138,8 +138,21 @@ def export_to_csv(conn, table_name, filename):
             # Write header row
             csv_writer.writerow(column_names)
 
+            # Convert amount columns to integers
+            new_rows = []
+            for row in rows:
+                if table_name == "員工薪資":
+                    new_row = (row[0], row[1], int(row[2]), row[3], row[4], row[5], row[6], row[7])
+                elif table_name == "部門資訊":
+                    new_row = (row[0], row[1], row[2], int(row[3]), row[4], row[5])
+                elif table_name == "臺幣單筆付款交易明細":
+                    new_row = (int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6])
+                else:
+                    new_row = row
+                new_rows.append(new_row)
+
             # Write data rows
-            csv_writer.writerows(rows)
+            csv_writer.writerows(new_rows)
 
         print(f"Exported {table_name} to {filename}")
 

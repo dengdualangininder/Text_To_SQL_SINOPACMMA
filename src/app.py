@@ -191,6 +191,12 @@ def main():
         else:
             st.error("Failed to generate SQL query.")
 
+    # Export to CSV
+    import create_db
+    conn = create_db.create_connection()
+    create_db.main()
+    conn.close()
+
     # Display conversation history
     st.subheader("歷史紀錄")
     for i, item in enumerate(st.session_state.conversation_history):
