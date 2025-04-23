@@ -115,7 +115,13 @@ def main():
             {"name": "付款備註", "type": "TEXT", "description": "付款的備註 (TEXT, Example: 材料費, 辦公室租金, 廣告費)"}
         ]
     }
-
+    # Check if database exists, create if not
+    if not os.path.exists(DATABASE_FILE):
+        import create_db
+        conn = create_db.create_connection()
+        create_db.main()
+        conn.close()
+        
     # Generate SQL query using Gemini API
     if st.session_state.natural_language_query:
         if st.session_state.natural_language_query.strip():
@@ -204,13 +210,7 @@ def main():
                 f.write(sql_query)
             st.success(f"SQL query saved to {file_path}")
         else:
-            st.error("Failed to generate SQL query.")
-
-    # Export to CSV
-    import create_db
-    conn = create_db.create_connection()
-    create_db.main()
-    conn.close()
+            st.error("Failed to generate SQL query.")    
 
     # Display conversation history
     st.subheader("歷史紀錄")
