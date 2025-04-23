@@ -121,7 +121,7 @@ def main():
         conn = create_db.create_connection()
         create_db.main()
         conn.close()
-        
+
     # Generate SQL query using Gemini API
     if st.session_state.natural_language_query:
         if st.session_state.natural_language_query.strip():
@@ -182,6 +182,7 @@ def main():
                     Do not mention anything about '公司金鑰'，user don't know what is '公司金鑰', just explain it is the filter that belong user's company.
                     User Natural language query: {st.session_state.natural_language_query}
                     Query Results: {results_string}
+                    No need to translate Results value
                     """
 
                     if results_string == "The SQL query returned no results.":

@@ -1,1 +1,1 @@
-SELECT  員工姓名 FROM  員工薪資 WHERE   公司金鑰 = '6224';
+SELECT * FROM  臺幣單筆付款交易明細 WHERE  公司金鑰 = '6224'  AND 交易日期 BETWEEN date('now', '-1 year') AND date('now');
