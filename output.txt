@@ -1,1 +1,1 @@
-SELECT  付款金額,  費用類型,  付款人資訊,  收款人資訊,  交易日期,  付款備註,  帳戶,  幣別 FROM  交易明細 WHERE   公司金鑰 = '6224' AND 交易日期 BETWEEN DATE('now', '-1 year') AND DATE('now');
+SELECT  費用類型,  SUM(    CASE      WHEN 幣別 = 'USD'      THEN 付款金額 / 0.03      WHEN 幣別 = 'JPY'      THEN 付款金額 / 3.5      WHEN 幣別 = 'EUR'      THEN 付款金額 / 0.032      WHEN 幣別 = 'HKD'      THEN 付款金額 / 0.38      ELSE 付款金額    END  ) AS 台幣總金額 FROM  交易明細 WHERE   公司金鑰 = '6224' AND 交易日期 BETWEEN date('now', '-1 year') AND date('now')GROUP BY  費用類型;

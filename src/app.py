@@ -32,6 +32,7 @@ if not GEMINI_API_KEY:
 DATABASE_FILE = "data.db"
 MEMORY_FILE = "memory.txt"
 SCHEMA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'schema.json') # Get absolute path
+EXCHANGE_RATES_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'exchange_rates.json') # Get absolute path
 
 def query_database(sql_query):
     """Queries the SQLite database and returns the results."""
@@ -81,6 +82,10 @@ def main():
     with open(SCHEMA_FILE, 'r') as f:
         schema_info = json.load(f)
 
+    # Load exchange rates from JSON file
+    with open(EXCHANGE_RATES_FILE, 'r') as f:
+        exchange_rates = json.load(f)
+
     # User input for natural language query
     natural_language_query = st.text_input("請輸入查詢：", key="natural_language_query", value=st.session_state.natural_language_query)
 
@@ -101,7 +106,12 @@ def main():
     if st.session_state.natural_language_query:
         if st.session_state.natural_language_query.strip():
             with st.spinner("Generating SQL query..."):
-                sql_query = gemini_client.generate_sql(st.session_state.natural_language_query, schema_info)
+                prompt = {
+                    "query": st.session_state.natural_language_query,
+                    "schema": schema_info,
+                    "exchange_rates": exchange_rates
+                }
+                sql_query = gemini_client.generate_sql(prompt, schema_info)
 
             if sql_query:
                 # Remove "```sql" from the beginning of the query
