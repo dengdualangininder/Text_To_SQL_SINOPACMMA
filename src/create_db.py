@@ -89,7 +89,7 @@ def populate_twd_payment_details(conn, num_records=3):
     payment_memos = ["材料費", "辦公室租金", "廣告費", "水電費", "薪資"]
     num_records = 20
     for i in range(num_records):
-        payment_amount = round(random.uniform(100, 1000), 2)
+        payment_amount = round(random.uniform(100, 1000), 0)
         charge_type = charge_types[i % len(charge_types)]
         payer = payer_info[i % len(payer_info)]
         payee = payee_info[i % len(payee_info)]

@@ -1,5 +1,5 @@
 員工編號,員工姓名,薪資,部門,職稱,到職日期,公司金鑰,薪資日期
-1,Johnny Hsiao,130000,Sales,Designer,2024-05-20,6224,2025-03-05
-2,Mark Wu,60000,Marketing,Developer,2020-04-21,6226,2025-02-22
-3,Jerry Chang,80000,Engineering,Tester,2024-06-26,6225,2025-02-22
-4,Grace Chen,70000,HR,Developer,2023-10-01,6225,2025-03-16
+1,Johnny Hsiao,100000,Sales,Manager,2023-03-22,6224,2025-04-12
+2,Mark Wu,70000,Marketing,Manager,2022-03-19,6225,2025-01-05
+3,Jerry Chang,140000,Engineering,Engineer,2020-01-14,6224,2025-03-06
+4,Grace Chen,100000,HR,Tester,2021-09-06,6225,2025-04-13
