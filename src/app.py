@@ -31,6 +31,7 @@ if not GEMINI_API_KEY:
 # Database file
 DATABASE_FILE = "data.db"
 MEMORY_FILE = "memory.txt"
+SCHEMA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'schema.json') # Get absolute path
 
 def query_database(sql_query):
     """Queries the SQLite database and returns the results."""
@@ -76,6 +77,10 @@ def main():
     if "natural_language_query" not in st.session_state:
         st.session_state.natural_language_query = ""
 
+    # Load database schema from JSON file
+    with open(SCHEMA_FILE, 'r') as f:
+        schema_info = json.load(f)
+
     # User input for natural language query
     natural_language_query = st.text_input("請輸入查詢：", key="natural_language_query", value=st.session_state.natural_language_query)
 
@@ -85,36 +90,6 @@ def main():
         st.error(str(e))
         st.stop()
 
-    # Define a more comprehensive schema for the Gemini API
-    schema_info = {
-        "員工薪資": [
-            {"name": "員工編號", "type": "INTEGER", "description": "員工的唯一識別碼 (INTEGER, PRIMARY KEY, Example: 12345)"},
-            {"name": "員工姓名", "type": "TEXT", "description": "員工的姓名 (TEXT, Example: 王小明, 李四, 張三)"},
-            {"name": "薪資", "type": "REAL", "description": "員工的薪資 (INTEGER, Example: 50000, 60000, 70000)"},
-            {"name": "部門", "type": "TEXT", "description": "員工的部門 (TEXT, FOREIGN KEY referencing 部門資訊.部門名稱, Example: Sales, Marketing, Engineering)"},
-            {"name": "職稱", "type": "TEXT", "description": "員工的職稱 (TEXT, Example: Engineer, Manager, Analyst)"},
-            {"name": "到職日期", "type": "TEXT", "description": "員工的到職日期 (TEXT, YYYY-MM-DD, Example: 2022-01-01, 2023-05-15, 2024-03-10)"},
-            {"name": "公司金鑰", "type": "TEXT", "description": "公司的識別碼 (TEXT, Example: 6224)"},
-            {"name": "薪資日期", "type": "TEXT", "description": "薪資的日期 (TEXT, YYYY-MM-DD, Example: 2024-04-18)"}
-        ],
-        "部門資訊": [
-            {"name": "部門編號", "type": "INTEGER", "description": "部門的唯一識別碼 (INTEGER, PRIMARY KEY, Example: 1, 2, 3)"},
-            {"name": "部門名稱", "type": "TEXT", "description": "部門的名稱 (TEXT, Example: Sales, Marketing, Engineering)"},
-            {"name": "部門主管", "type": "TEXT", "description": "部門的主管姓名 (TEXT, Example: 陳經理, 林主任, 黃組長)"},
-            {"name": "部門人數", "type": "INTEGER", "description": "部門的員工總數 (INTEGER, PRIMARY KEY, Example: 10, 20, 30)"},
-            {"name": "地點", "type": "TEXT", "description": "部門的地點 (TEXT, Example: New York, London, Tokyo)"},
-            {"name": "公司金鑰", "type": "TEXT", "description": "公司的識別碼 (TEXT, Example: 6224)"}
-        ],
-        "臺幣單筆付款交易明細": [
-            {"name": "付款金額", "type": "REAL", "description": "付款的金額 (REAL, Example: 100, 200, 300)"},
-            {"name": "費用類型", "type": "TEXT", "description": "費用的類型 (TEXT, Example: 水費, 電費, 瓦斯費)"},
-            {"name": "付款人資訊", "type": "TEXT", "description": "付款人的資訊 (TEXT, Example: John Smith, David Lee, Mary Chen)"},
-            {"name": "收款人資訊", "type": "TEXT", "description": "收款人的資訊 (TEXT, Example: Water Company, Electric Company, Gas Company)"},
-            {"name": "交易日期", "type": "TEXT", "description": "交易的日期 (TEXT, YYYY-MM-DD, Example: 2025-01-01, 2025-02-15, 2024-03-10)"},
-            {"name": "公司金鑰", "type": "TEXT", "description": "公司的識別碼 (TEXT, Example: 6224)"},
-            {"name": "付款備註", "type": "TEXT", "description": "付款的備註 (TEXT, Example: 材料費, 辦公室租金, 廣告費)"}
-        ]
-    }
     # Check if database exists, create if not
     if not os.path.exists(DATABASE_FILE):
         import create_db
@@ -206,10 +181,13 @@ def main():
                     st.error("Failed to generate a conversational description of the query results.")
 
                 # Save the SQL query to a .txt file
-            file_path = "output.txt"
-            with open(file_path, "w") as f:
-                f.write(sql_query)
-            st.success(f"SQL query saved to {file_path}")
+                if sql_query:
+                    file_path = "output.txt"
+                    with open(file_path, "w") as f:
+                        f.write(sql_query)
+                    st.success(f"SQL query saved to {file_path}")
+                else:
+                    st.error("Failed to generate SQL query.")
         else:
             st.error("Failed to generate SQL query.")    
 

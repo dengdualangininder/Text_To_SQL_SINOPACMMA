@@ -77,34 +77,53 @@ def populate_departments(conn, num_records=2):
     print(f"Number of rows in 部門資訊: {count}")
 
 def populate_twd_payment_details(conn, num_records=3):
-    """Populates the 臺幣單筆付款交易明細 table with fake data."""
+    """Populates the 交易明細 table with fake data."""
     sql = """
-    INSERT INTO 臺幣單筆付款交易明細 (付款金額, 費用類型, 付款人資訊, 收款人資訊, 交易日期, 公司金鑰, 付款備註)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO 交易明細 (付款金額, 費用類型, 付款人資訊, 收款人資訊, 交易日期, 公司金鑰, 付款備註, 帳戶, 幣別)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
     cur = conn.cursor()
-    charge_types = ["Water Bill", "Electricity Bill", "Gas Bill"]
+    charge_types = ["Water Bill", "Electricity Bill", "Gas Bill", "Materials", "Rent", "Advertising", "Utilities", "Salaries"]
     payer_info = ["John Smith", "David Lee", "Mary Chen"]
     payee_info = ["Water Company", "Electric Company", "Gas Company"]
     payment_memos = ["材料費", "辦公室租金", "廣告費", "水電費", "薪資"]
+    accounts = ["臺幣帳戶1", "臺幣帳戶2", "日幣帳戶", "美金帳戶", "歐元帳戶", "港幣帳戶"]
+    currencies = ["TWD", "JPY", "USD", "EUR", "HKD"]
+    account_currency_map = {
+        "臺幣帳戶1": "TWD",
+        "臺幣帳戶2": "TWD",
+        "日幣帳戶": "JPY",
+        "美金帳戶": "USD",
+        "歐元帳戶": "EUR",
+        "港幣帳戶": "HKD"
+    }
+    payment_memo_charge_map = {
+        "材料費": "Materials",
+        "辦公室租金": "Rent",
+        "廣告費": "Advertising",
+        "水電費": "Utilities",
+        "薪資": "Salaries"
+    }
     num_records = 20
     for i in range(num_records):
         payment_amount = round(random.uniform(100, 1000), 0)
-        charge_type = charge_types[i % len(charge_types)]
+        payment_memo = random.choice(payment_memos)
+        charge_type = payment_memo_charge_map[payment_memo]
         payer = payer_info[i % len(payer_info)]
         payee = payee_info[i % len(payee_info)]
         month = random.randint(1, 4)
         day = random.randint(1, 22)
         transaction_date = f"2025-{month:02}-{day:02}"
         company_key = random.choice(["6224", "6225", "6226"])
-        payment_memo = payment_memos[i % len(payment_memos)]
-        values = (payment_amount, charge_type, payer, payee, transaction_date, company_key, payment_memo)
+        account = random.choice(accounts)
+        currency = account_currency_map[account]
+        values = (payment_amount, charge_type, payer, payee, transaction_date, company_key, payment_memo, account, currency)
         cur.execute(sql, values)
     conn.commit()
-    print("Populated 臺幣單筆付款交易明細 table")
-    cur.execute("SELECT COUNT(*) FROM 臺幣單筆付款交易明細")
+    print("Populated 交易明細 table")
+    cur.execute("SELECT COUNT(*) FROM 交易明細")
     count = cur.fetchone()[0]
-    print(f"Number of rows in 臺幣單筆付款交易明細: {count}")
+    print(f"Number of rows in 交易明細: {count}")
 
 def display_table_data(conn, table_name):
     """Displays all data from a table in the SQLite database."""
@@ -145,8 +164,8 @@ def export_to_csv(conn, table_name, filename):
                     new_row = (row[0], row[1], int(row[2]), row[3], row[4], row[5], row[6], row[7])
                 elif table_name == "部門資訊":
                     new_row = (row[0], row[1], row[2], int(row[3]), row[4], row[5])
-                elif table_name == "臺幣單筆付款交易明細":
-                    new_row = (int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6])
+                elif table_name == "交易明細":
+                    new_row = (int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
                 else:
                     new_row = row
                 new_rows.append(new_row)
@@ -188,14 +207,16 @@ def main():
         """
 
         twd_payment_details_table_sql = """
-        CREATE TABLE IF NOT EXISTS 臺幣單筆付款交易明細 (
+        CREATE TABLE IF NOT EXISTS 交易明細 (
             付款金額 REAL,
             費用類型 TEXT,
             付款人資訊 TEXT,
             收款人資訊 TEXT,
             交易日期 TEXT,
             公司金鑰 TEXT,
-            付款備註 TEXT
+            付款備註 TEXT,
+            帳戶 TEXT,
+            幣別 TEXT
         );
         """
 
@@ -204,7 +225,7 @@ def main():
             cur = conn.cursor()
             cur.execute("DROP TABLE IF EXISTS 員工薪資")
             cur.execute("DROP TABLE IF EXISTS 部門資訊")
-            cur.execute("DROP TABLE IF EXISTS 臺幣單筆付款交易明細")
+            cur.execute("DROP TABLE IF EXISTS 交易明細")
             conn.commit()
         except sqlite3.Error as e:
             print(f"Error dropping tables: {e}")
@@ -222,12 +243,12 @@ def main():
         # Display table data
         display_table_data(conn, "員工薪資")
         display_table_data(conn, "部門資訊")
-        display_table_data(conn, "臺幣單筆付款交易明細")
+        display_table_data(conn, "交易明細")
 
         # Export to CSV
         export_to_csv(conn, "員工薪資", "員工薪資.csv")
         export_to_csv(conn, "部門資訊", "部門資訊.csv")
-        export_to_csv(conn, "臺幣單筆付款交易明細", "臺幣單筆付款交易明細.csv")
+        export_to_csv(conn, "交易明細", "單筆付款交易明細.csv")
 
         conn.close()
     else:

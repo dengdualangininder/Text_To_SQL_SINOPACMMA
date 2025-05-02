@@ -1,0 +1,37 @@
+{
+  "員工薪資": {
+    "columns": [
+      {"name": "員工編號", "type": "INTEGER", "primaryKey": true},
+      {"name": "員工姓名", "type": "TEXT"},
+      {"name": "薪資", "type": "REAL"},
+      {"name": "部門", "type": "TEXT"},
+      {"name": "職稱", "type": "TEXT"},
+      {"name": "到職日期", "type": "TEXT"},
+      {"name": "公司金鑰", "type": "TEXT"},
+      {"name": "薪資日期", "type": "TEXT"}
+    ]
+  },
+  "部門資訊": {
+    "columns": [
+      {"name": "部門編號", "type": "INTEGER", "primaryKey": true},
+      {"name": "部門名稱", "type": "TEXT"},
+      {"name": "部門主管", "type": "TEXT"},
+      {"name": "部門人數", "type": "INTEGER"},
+      {"name": "地點", "type": "TEXT"},
+      {"name": "公司金鑰", "type": "TEXT"}
+    ]
+  },
+  "交易明細": {
+    "columns": [
+      {"name": "付款金額", "type": "REAL"},
+      {"name": "費用類型", "type": "TEXT"},
+      {"name": "付款人資訊", "type": "TEXT"},
+      {"name": "收款人資訊", "type": "TEXT"},
+      {"name": "交易日期", "type": "TEXT"},
+      {"name": "公司金鑰", "type": "TEXT"},
+      {"name": "付款備註", "type": "TEXT"},
+      {"name": "帳戶", "type": "TEXT"},
+      {"name": "幣別", "type": "TEXT"}
+    ]
+  }
+}

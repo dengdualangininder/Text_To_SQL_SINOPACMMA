@@ -1,1 +1,1 @@
-SELECT * FROM  臺幣單筆付款交易明細 WHERE  公司金鑰 = '6224'  AND 交易日期 BETWEEN date('now', '-1 year') AND date('now');
+SELECT  付款金額,  費用類型,  付款人資訊,  收款人資訊,  交易日期,  付款備註,  帳戶,  幣別 FROM  交易明細 WHERE   公司金鑰 = '6224' AND 交易日期 BETWEEN DATE('now', '-1 year') AND DATE('now');
