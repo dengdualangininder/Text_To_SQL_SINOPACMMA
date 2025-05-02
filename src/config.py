@@ -5,8 +5,8 @@ SQL_TEMPLATE = """
 1. 所有查詢必須包含WHERE 公司金鑰='{COMPANYKEY}'
 2. 禁止生成DELETE/UPDATE語句
 3. 生成SQL語句需檢查是否有SQL注入風險
+4. 如果使用者請求的欄位不存在於schema中，則返回錯誤訊息 "欄位不存在"，並根據user的意圖建議改怎麼詢問
 
-Given the following SQL schema:
 {schema}
 
 Generate a SQL query to answer the following question:
