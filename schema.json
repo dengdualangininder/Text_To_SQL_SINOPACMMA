@@ -33,5 +33,14 @@
       {"name": "帳戶", "type": "TEXT"},
       {"name": "幣別", "type": "TEXT"}
     ]
+  },
+  "匯率資料表": {
+    "columns": [
+      {"name": "幣別", "type": "TEXT", "primaryKey": true},
+      {"name": "生效日期", "type": "TEXT", "primaryKey": true},
+      {"name": "匯率", "type": "REAL"},
+      {"name": "匯率類型", "type": "TEXT"},
+      {"name": "公司金鑰", "type": "TEXT"}
+    ]
   }
 }

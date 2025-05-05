@@ -1,1 +1,1 @@
-SELECT   e.員工姓名,  d.部門主管  FROM   員工薪資 AS e JOIN  部門資訊 AS d  ON e.部門 = d.部門名稱  WHERE    e.公司金鑰 = '6224'  AND  e.部門 = 'Sales';
+SELECT   T.交易日期,  T.付款金額,  T.幣別,  T.付款金額 * H.匯率 AS 換算台幣金額  FROM   交易明細 AS T JOIN  匯率資料表 AS H  ON T.幣別 = H.幣別  WHERE    T.公司金鑰 = '6224'   AND  T.交易日期  BETWEEN  date('now', '-1 year')  AND  date('now')   AND  H.公司金鑰 = '6224';

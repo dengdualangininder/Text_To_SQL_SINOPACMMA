@@ -1,5 +1,8 @@
 import sqlite3
 import random
+import datetime
+import csv
+import json
 
 # Database file
 DATABASE_FILE = "data.db"
@@ -12,7 +15,6 @@ def create_connection():
     except sqlite3.Error as e:
         print(f"Error connecting to database: {e}")
     return conn
-
 
 def create_table(conn, table_sql):
     """Creates a table in the SQLite database."""
@@ -92,7 +94,7 @@ def populate_twd_payment_details(conn, num_records=3):
     account_currency_map = {
         "臺幣帳戶1": "TWD",
         "臺幣帳戶2": "TWD",
-        "日幣帳戶": "JPY",
+        "日幣帳戶": "TWD",
         "美金帳戶": "USD",
         "歐元帳戶": "EUR",
         "港幣帳戶": "HKD"
@@ -125,17 +127,42 @@ def populate_twd_payment_details(conn, num_records=3):
     count = cur.fetchone()[0]
     print(f"Number of rows in 交易明細: {count}")
 
+def populate_exchange_rates(conn):
+    """Populates the 匯率資料表 table with data."""
+    sql = """
+    INSERT INTO 匯率資料表 (幣別, 生效日期, 匯率, 匯率類型, 公司金鑰)
+    VALUES (?, ?, ?, ?, ?)
+    """
+    cur = conn.cursor()
+    company_key = '6224'
+    effective_date = datetime.date(2025, 5, 5).strftime("%Y-%m-%d")
+    exchange_rate_type = "即期匯率"
+
+    # Load exchange rates from JSON file
+    with open("exchange_rates.json", 'r') as f:
+        exchange_rates = json.load(f)
+
+    for key, rate in exchange_rates.items():
+        if key.startswith("TWD_"):
+            currency = key[4:]
+            values = (currency, effective_date, rate, exchange_rate_type, company_key)
+            cur.execute(sql, values)
+
+    conn.commit()
+    print("Populated 匯率資料表 table")
+    cur.execute("SELECT COUNT(*) FROM 匯率資料表")
+    count = cur.fetchone()[0]
+    print(f"Number of rows in 匯率資料表: {count}")
+
 def display_table_data(conn, table_name):
     """Displays all data from a table in the SQLite database."""
     try:
         cur = conn.cursor()
         cur.execute(f"SELECT * FROM {table_name}")
         rows = cur.fetchall()
-
         print(f"Data in {table_name}:")
         for row in rows:
             print(row)
-
     except sqlite3.Error as e:
         print(f"Error displaying data from {table_name}: {e}")
 
@@ -145,18 +172,19 @@ def export_to_csv(conn, table_name, filename):
         cur = conn.cursor()
         cur.execute(f"SELECT * FROM {table_name}")
         rows = cur.fetchall()
+        print(f"Data from {table_name}: {rows}")
 
         # Get column names
         column_names = [description[0] for description in cur.description]
+        for row in rows:
+            print(row)
 
         # Write to CSV file
-        with open(filename, "w", newline="", encoding="big5") as csvfile:
+        with open(filename, "w", newline="", encoding="utf-8-sig") as csvfile:
             import csv
             csv_writer = csv.writer(csvfile)
-
             # Write header row
             csv_writer.writerow(column_names)
-
             # Convert amount columns to integers
             new_rows = []
             for row in rows:
@@ -166,15 +194,14 @@ def export_to_csv(conn, table_name, filename):
                     new_row = (row[0], row[1], row[2], int(row[3]), row[4], row[5])
                 elif table_name == "交易明細":
                     new_row = (int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
+                elif table_name == "匯率資料表":
+                    new_row = (row[0], row[1], row[2], row[3], '6224')  # Updated for new schema
                 else:
                     new_row = row
                 new_rows.append(new_row)
-
             # Write data rows
             csv_writer.writerows(new_rows)
-
         print(f"Exported {table_name} to {filename}")
-
     except sqlite3.Error as e:
         print(f"Error exporting {table_name}: {e}")
 
@@ -220,12 +247,24 @@ def main():
         );
         """
 
+        exchange_rates_table_sql = """
+        CREATE TABLE IF NOT EXISTS 匯率資料表 (
+            幣別 TEXT,
+            生效日期 TEXT,
+            匯率 REAL,
+            匯率類型 TEXT,
+            公司金鑰 TEXT,
+            PRIMARY KEY (幣別, 生效日期)
+        );
+        """
+
         # Drop existing tables (if they exist)
         try:
             cur = conn.cursor()
             cur.execute("DROP TABLE IF EXISTS 員工薪資")
             cur.execute("DROP TABLE IF EXISTS 部門資訊")
             cur.execute("DROP TABLE IF EXISTS 交易明細")
+            cur.execute("DROP TABLE IF EXISTS 匯率資料表")
             conn.commit()
         except sqlite3.Error as e:
             print(f"Error dropping tables: {e}")
@@ -234,21 +273,25 @@ def main():
         create_table(conn, salaries_table_sql)
         create_table(conn, departments_table_sql)
         create_table(conn, twd_payment_details_table_sql)
+        create_table(conn, exchange_rates_table_sql)
 
         # Populate tables with fake data
         populate_salaries(conn)
         populate_departments(conn)
         populate_twd_payment_details(conn)
+        populate_exchange_rates(conn)
 
         # Display table data
         display_table_data(conn, "員工薪資")
         display_table_data(conn, "部門資訊")
         display_table_data(conn, "交易明細")
+        display_table_data(conn, "匯率資料表")
 
         # Export to CSV
         export_to_csv(conn, "員工薪資", "員工薪資.csv")
         export_to_csv(conn, "部門資訊", "部門資訊.csv")
         export_to_csv(conn, "交易明細", "單筆付款交易明細.csv")
+        export_to_csv(conn, "匯率資料表", "匯率資料表.csv")
 
         conn.close()
     else:
