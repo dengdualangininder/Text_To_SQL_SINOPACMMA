@@ -1,1 +1,1 @@
-SELECT   T.交易日期,  T.付款金額,  T.幣別,  T.付款金額 * H.匯率 AS 換算台幣金額  FROM   交易明細 AS T JOIN  匯率資料表 AS H  ON T.幣別 = H.幣別  WHERE    T.公司金鑰 = '6224'   AND  T.交易日期  BETWEEN  date('now', '-1 year')  AND  date('now')   AND  H.公司金鑰 = '6224';
+SELECT   T.幣別,  SUM(T.付款金額 * H.匯率) AS 現金流出總額_TWD  FROM   交易明細 AS T JOIN  匯率資料表 AS H  ON T.幣別 = H.幣別  WHERE    T.公司金鑰 = '6224'  AND  STRFTIME('%Y', T.交易日期) = STRFTIME('%Y', DATE('now')) GROUP BY   T.幣別;

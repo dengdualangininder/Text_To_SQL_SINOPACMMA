@@ -154,6 +154,46 @@ def populate_exchange_rates(conn):
     count = cur.fetchone()[0]
     print(f"Number of rows in 匯率資料表: {count}")
 
+def populate_account_balances(conn):
+    """Populates the 帳戶餘額表 table with initial data."""
+    sql = """
+    INSERT INTO 帳戶餘額表 (帳戶, 餘額, 幣別, 最低安全餘額, 公司金鑰)
+    VALUES (?, ?, ?, ?, ?)
+    """
+    cur = conn.cursor()
+    accounts = ["臺幣帳戶1", "臺幣帳戶2", "日幣帳戶", "美金帳戶", "歐元帳戶", "港幣帳戶"]
+    exchange_rates = {
+        "USD": 0.03,
+        "JPY": 3.5,
+        "EUR": 0.032,
+        "HKD": 0.38
+    }
+    account_currency_map = {
+        "臺幣帳戶1": "TWD",
+        "臺幣帳戶2": "TWD",
+        "日幣帳戶": "JPY",
+        "美金帳戶": "USD",
+        "歐元帳戶": "EUR",
+        "港幣帳戶": "HKD"
+    }
+    company_key = '6224'
+    for account in accounts:
+        currency = account_currency_map[account]
+        if currency == "TWD":
+            min_safe_balance = 1000
+            balance = random.randint(500, 2000)
+        else:
+            rate = exchange_rates[currency]
+            min_safe_balance = round(1000 * rate, 2)
+            balance = int(round(random.uniform(500, 2000) * rate, 0))
+        values = (account, balance, currency, min_safe_balance, company_key)
+        cur.execute(sql, values)
+    conn.commit()
+    print("Populated 帳戶餘額表 table")
+    cur.execute("SELECT COUNT(*) FROM 帳戶餘額表")
+    count = cur.fetchone()[0]
+    print(f"Number of rows in 帳戶餘額表: {count}")
+
 def display_table_data(conn, table_name):
     """Displays all data from a table in the SQLite database."""
     try:
@@ -195,7 +235,9 @@ def export_to_csv(conn, table_name, filename):
                 elif table_name == "交易明細":
                     new_row = (int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
                 elif table_name == "匯率資料表":
-                    new_row = (row[0], row[1], row[2], row[3], '6224')  # Updated for new schema
+                    new_row = (row[0], row[1], row[2], row[3], '6224')
+                elif table_name == "帳戶餘額表":
+                    new_row = (row[0], row[1], row[2], row[3], '6224')
                 else:
                     new_row = row
                 new_rows.append(new_row)
@@ -209,6 +251,17 @@ def main():
     conn = create_connection()
     if conn is not None:
         # Define table creation statements
+        account_balance_table_sql = """
+        CREATE TABLE IF NOT EXISTS 帳戶餘額表 (
+            帳戶 TEXT PRIMARY KEY,
+            餘額 REAL,
+            幣別 TEXT,
+            最低安全餘額 REAL,
+            公司金鑰 TEXT,
+            FOREIGN KEY (帳戶) REFERENCES 交易明細(帳戶)
+        );
+        """
+
         salaries_table_sql = """
         CREATE TABLE IF NOT EXISTS 員工薪資 (
             員工編號 INTEGER PRIMARY KEY,
@@ -227,7 +280,7 @@ def main():
             部門編號 INTEGER PRIMARY KEY,
             部門名稱 TEXT,
             部門主管 TEXT,
-            部門人數 INTEGER,
+            部門人數 TEXT,
             地點 TEXT,
             公司金鑰 TEXT
         );
@@ -265,11 +318,13 @@ def main():
             cur.execute("DROP TABLE IF EXISTS 部門資訊")
             cur.execute("DROP TABLE IF EXISTS 交易明細")
             cur.execute("DROP TABLE IF EXISTS 匯率資料表")
+            cur.execute("DROP TABLE IF EXISTS 帳戶餘額表")
             conn.commit()
         except sqlite3.Error as e:
             print(f"Error dropping tables: {e}")
 
         # Create tables
+        create_table(conn, account_balance_table_sql)
         create_table(conn, salaries_table_sql)
         create_table(conn, departments_table_sql)
         create_table(conn, twd_payment_details_table_sql)
@@ -280,18 +335,21 @@ def main():
         populate_departments(conn)
         populate_twd_payment_details(conn)
         populate_exchange_rates(conn)
+        populate_account_balances(conn)
 
         # Display table data
         display_table_data(conn, "員工薪資")
         display_table_data(conn, "部門資訊")
         display_table_data(conn, "交易明細")
         display_table_data(conn, "匯率資料表")
+        display_table_data(conn, "帳戶餘額表")
 
         # Export to CSV
         export_to_csv(conn, "員工薪資", "員工薪資.csv")
         export_to_csv(conn, "部門資訊", "部門資訊.csv")
         export_to_csv(conn, "交易明細", "單筆付款交易明細.csv")
         export_to_csv(conn, "匯率資料表", "匯率資料表.csv")
+        export_to_csv(conn, "帳戶餘額表", "帳戶餘額表.csv")
 
         conn.close()
     else:

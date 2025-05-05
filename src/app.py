@@ -110,7 +110,10 @@ def main():
                     "query": st.session_state.natural_language_query,
                     "schema": schema_info,
                     "exchange_rates": exchange_rates,
-                    "instructions": "When the user's query involves currency conversion, use the 匯率資料表 table to get the exchange rates. The table contains the exchange rates against TWD for USD, JPY, EUR, and HKD. The table has columns 幣別 (currency), 生效日期 (effective date), 匯率 (exchange rate), 匯率類型 (exchange rate type), and 公司金鑰 (company key). The 生效日期 (effective date) in the 匯率資料表 table represents the exchange rate for that specific date and does not need to match the transaction date in other tables. DO NOT include the condition `H.生效日期 = T.交易日期` in the SQL query."
+                    "query": st.session_state.natural_language_query,
+                    "schema": schema_info,
+                    "exchange_rates": exchange_rates,
+                    "instructions": "When the user's query involves currency conversion, use the 匯率資料表 table to get the exchange rates. The table contains the exchange rates against TWD for USD, JPY, EUR, and HKD.  The table has columns 幣別 (currency), 生效日期 (effective date), 匯率 (exchange rate), 匯率類型 (exchange rate type), and 公司金鑰 (company key). The 生效日期 (effective date) in the 匯率資料表 table represents the exchange rate for that specific date and does not need to match the transaction date in other tables.  Also, consider the new 帳戶餘額表 table which has columns 帳戶 (account), 餘額 (balance), 幣別 (currency), 最低安全餘額 (minimum safe balance), and 公司金鑰 (company key). DO NOT include the condition `H.生效日期 = T.交易日期` in the SQL query."
                 }
                 sql_query = gemini_client.generate_sql(prompt, schema_info)
 

@@ -42,5 +42,15 @@
       {"name": "匯率類型", "type": "TEXT"},
       {"name": "公司金鑰", "type": "TEXT"}
     ]
+  },
+  "帳戶餘額表": {
+    "columns": [
+      {"name": "帳戶", "type": "TEXT", "primaryKey": true},
+      {"name": "餘額", "type": "REAL"},
+      {"name": "幣別", "type": "TEXT"},
+      {"name": "最低安全餘額", "type": "REAL"},
+      {"name": "公司金鑰", "type": "TEXT"},
+      {"name": "FOREIGN KEY", "type": "TEXT", "references": "交易明細(帳戶)"}
+    ]
   }
 }
