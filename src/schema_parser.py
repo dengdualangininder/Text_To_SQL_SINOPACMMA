@@ -1,4 +1,11 @@
-import docx
+def format_schema(schema_info):
+    """Formats the schema information into a string."""
+    schema_string = ""
+    for table_name, columns in schema_info.items():
+        schema_string += f"Table: {table_name}\n"
+        for column in columns:
+            schema_string += f"  Column: {column['name']} ({column['type']}) - {column['description']}\n"
+    return schema_string
 
 def parse_schema(docx_path):
     """
@@ -11,6 +18,7 @@ def parse_schema(docx_path):
         dict: A dictionary containing the schema information, with table names as keys and a list of column dictionaries as values.
              Each column dictionary contains 'name', 'type', and 'description' keys.
     """
+    import docx
     try:
         doc = docx.Document(docx_path)
         table_name = None

@@ -3,6 +3,14 @@ import os
 from dotenv import load_dotenv
 import datetime
 import config
+import re
+
+def add_spaces_around_keywords(sql_query):
+    """Adds spaces around SQL keywords to prevent syntax errors."""
+    keywords = ["WHERE", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "JOIN", "AND", "OR", "NOT", "IN", "BETWEEN", "LIKE", "HAVING", "GROUP BY", "ORDER BY", "LIMIT", "SELECT", "FROM", "UPDATE", "DELETE", "INSERT", "INTO", "VALUES"]
+    for keyword in keywords:
+        sql_query = re.sub(r"(\b" + keyword + r"\b)", r" \1 ", sql_query)
+    return sql_query
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,6 +37,8 @@ def generate_sql(natural_language_query, schema_info, temperature=0.0):
 
         # Extract the generated SQL query from the response
         sql_query = response.text.strip()
+        # Add spaces around keywords
+        sql_query = add_spaces_around_keywords(sql_query)
         return sql_query
 
     except Exception as e:

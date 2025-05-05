@@ -1,1 +1,1 @@
-SELECT  * FROM  交易明細 WHERE   公司金鑰 = '6224' AND 交易日期 BETWEEN DATE('now', '-1 year') AND DATE('now');
+SELECT   e.員工姓名,  d.部門主管  FROM   員工薪資 AS e JOIN  部門資訊 AS d  ON e.部門 = d.部門名稱  WHERE    e.公司金鑰 = '6224'  AND  e.部門 = 'Sales';
