@@ -1,0 +1,21 @@
+﻿收入金額,付款金額,費用類型,付款人資訊,收款人資訊,交易日期,公司金鑰,備註,帳戶,幣別
+,339,Materials,John Smith,Water Company,2025-02-10,6224,材料費,歐元帳戶,EUR
+203,,Advertising,David Lee,Electric Company,2025-01-13,6224,廣告費,日幣帳戶,JPY
+363,,Utilities,Mary Chen,Gas Company,2025-04-16,6224,水電費,歐元帳戶,EUR
+,211,Utilities,John Smith,Water Company,2025-02-21,6226,水電費,美金帳戶,USD
+,755,Utilities,David Lee,Electric Company,2025-04-17,6224,水電費,美金帳戶,USD
+442,,Rent,Mary Chen,Gas Company,2025-03-21,6224,辦公室租金,日幣帳戶,JPY
+958,,Utilities,John Smith,Water Company,2025-03-15,6224,水電費,臺幣帳戶2,TWD
+,701,Utilities,David Lee,Electric Company,2025-03-13,6224,水電費,歐元帳戶,EUR
+,357,Advertising,Mary Chen,Gas Company,2025-02-08,6224,廣告費,美金帳戶,USD
+249,,Rent,John Smith,Water Company,2025-01-12,6224,辦公室租金,港幣帳戶,HKD
+586,,Utilities,David Lee,Electric Company,2025-03-20,6226,水電費,臺幣帳戶1,TWD
+875,,Salaries,Mary Chen,Gas Company,2025-02-20,6226,薪資,臺幣帳戶2,TWD
+,818,Materials,John Smith,Water Company,2025-02-16,6224,材料費,臺幣帳戶1,TWD
+321,,Utilities,David Lee,Electric Company,2025-04-01,6226,水電費,港幣帳戶,HKD
+520,,Rent,Mary Chen,Gas Company,2025-01-12,6226,辦公室租金,歐元帳戶,EUR
+,167,Rent,John Smith,Water Company,2025-04-14,6225,辦公室租金,臺幣帳戶2,TWD
+945,,Utilities,David Lee,Electric Company,2025-03-06,6226,水電費,歐元帳戶,EUR
+,763,Advertising,Mary Chen,Gas Company,2025-01-05,6226,廣告費,港幣帳戶,HKD
+,475,Advertising,John Smith,Water Company,2025-01-13,6225,廣告費,港幣帳戶,HKD
+,548,Materials,David Lee,Electric Company,2025-01-06,6224,材料費,臺幣帳戶2,TWD

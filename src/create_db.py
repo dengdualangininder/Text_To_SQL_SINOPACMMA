@@ -94,7 +94,7 @@ def populate_twd_payment_details(conn, num_records=3):
     account_currency_map = {
         "臺幣帳戶1": "TWD",
         "臺幣帳戶2": "TWD",
-        "日幣帳戶": "TWD",
+        "日幣帳戶": "JPY",
         "美金帳戶": "USD",
         "歐元帳戶": "EUR",
         "港幣帳戶": "HKD"
@@ -362,7 +362,7 @@ def main():
         # Export to CSV
         export_to_csv(conn, "員工薪資", "員工薪資.csv")
         export_to_csv(conn, "部門資訊", "部門資訊.csv")
-        export_to_csv(conn, "交易明細", "單筆付款交易明細.csv")
+        export_to_csv(conn, "交易明細", "交易明細.csv")
         export_to_csv(conn, "匯率資料表", "匯率資料表.csv")
         export_to_csv(conn, "帳戶餘額表", "帳戶餘額表.csv")
 
