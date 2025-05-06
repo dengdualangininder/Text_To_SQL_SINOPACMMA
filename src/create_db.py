@@ -108,10 +108,10 @@ def populate_twd_payment_details(conn, num_records=3):
     }
     num_records = 20
     for i in range(num_records):
-        payment_amount = round(random.uniform(100, 1000), 0)
-        income_amount = None
+        payment_amount = round(random.uniform(2000, 10000), 0)
+        income_amount = 0
         if random.random() < 0.5:
-            payment_amount = None
+            payment_amount = 0
             income_amount = random.randint(100, 1000)
         payment_memo = random.choice(payment_memos)
         charge_type = payment_memo_charge_map[payment_memo]
@@ -184,12 +184,12 @@ def populate_account_balances(conn):
     for account in accounts:
         currency = account_currency_map[account]
         if currency == "TWD":
-            min_safe_balance = 1000
-            balance = random.randint(500, 2000)
+            min_safe_balance = 10000
+            balance = random.randint(5000, 20000)
         else:
             rate = exchange_rates[currency]
-            min_safe_balance = round(1000 * rate, 2)
-            balance = int(round(random.uniform(500, 2000) * rate, 0))
+            min_safe_balance = round(13000 * rate, 0)
+            balance = int(round(random.uniform(10000, 20000) * rate, 0))
         values = (account, balance, currency, min_safe_balance, company_key)
         cur.execute(sql, values)
     conn.commit()
