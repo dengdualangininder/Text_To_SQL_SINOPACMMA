@@ -24,7 +24,7 @@ if not GEMINI_API_KEY:
 def generate_sql(natural_language_query, schema_info, temperature=0.0):
     """Generates SQL query using Gemini API."""
     try:
-        schema = schema_info  # schema_parser.parse_schema(schema_info) #remove schema_parser
+        schema = schema_info
         prompt = config.SQL_TEMPLATE.format(schema=schema, question=natural_language_query, COMPANYKEY=config.COMPANYKEY)
         print(f"Prompt: {prompt}")
 
@@ -32,8 +32,20 @@ def generate_sql(natural_language_query, schema_info, temperature=0.0):
         genai.configure(api_key=GEMINI_API_KEY)
         model = genai.GenerativeModel('gemini-2.0-flash')
 
+        # Define safety settings to reduce restrictions
+        safety_settings = {
+            "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
+            "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
+            "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
+            "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE"
+        }
+
         # Generate content using the Gemini API
-        response = model.generate_content(prompt, generation_config={"temperature": temperature})
+        response = model.generate_content(
+            prompt,
+            generation_config={"temperature": temperature},
+            safety_settings=safety_settings
+        )
 
         # Extract the generated SQL query from the response
         sql_query = response.text.strip()
@@ -46,7 +58,7 @@ def generate_sql(natural_language_query, schema_info, temperature=0.0):
         print(error_message)
         return None
 
-def generate_description(prompt, temperature=0.0): #設定termperature=0確保一致性
+def generate_description(prompt, temperature=0.0):
     """
     Generates a conversational description using the Gemini API.
     Args:
@@ -60,8 +72,20 @@ def generate_description(prompt, temperature=0.0): #設定termperature=0確保�
         genai.configure(api_key=GEMINI_API_KEY)
         model = genai.GenerativeModel('gemini-2.0-flash')
 
+        # Define safety settings to reduce restrictions
+        safety_settings = {
+            "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
+            "HARM_CATEGORY_HATE_SPEECH": "BLOCK_MEDIUM_AND_ABOVE",
+            "HARM_CATEGORY_HARASSMENT": "BLOCK_MEDIUM_AND_ABOVE",
+            "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_MEDIUM_AND_ABOVE"
+        }
+
         # Generate content using the Gemini API
-        response = model.generate_content(prompt, generation_config={"temperature": temperature})
+        response = model.generate_content(
+            prompt,
+            generation_config={"temperature": temperature},
+            safety_settings=safety_settings
+        )
 
         # Extract the generated conversational description from the response
         description = response.text.strip()

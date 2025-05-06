@@ -44,7 +44,7 @@ def populate_salaries(conn, num_records=5):
         month = random.randint(1, 4)
         day = random.randint(1, 22)
         salary_date = f"2025-{month:02}-{day:02}"
-        company_key = random.choice(["6224", "6225", "6226"]) if i > 0 else "6224"
+        company_key = "6224" if i == 0 else random.choices(["6224", "6225", "6226"], weights=[0.7, 0.15, 0.15], k=1)[0]
         values = (employee_id, employee_name, salary, department, job_title, hire_date, company_key, salary_date)
         cur.execute(sql, values)
     conn.commit()
@@ -81,8 +81,8 @@ def populate_departments(conn, num_records=2):
 def populate_twd_payment_details(conn, num_records=3):
     """Populates the 交易明細 table with fake data."""
     sql = """
-    INSERT INTO 交易明細 (付款金額, 費用類型, 付款人資訊, 收款人資訊, 交易日期, 公司金鑰, 付款備註, 帳戶, 幣別)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO 交易明細 (收入金額, 付款金額, 費用類型, 付款人資訊, 收款人資訊, 交易日期, 公司金鑰, 備註, 帳戶, 幣別)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
     cur = conn.cursor()
     charge_types = ["Water Bill", "Electricity Bill", "Gas Bill", "Materials", "Rent", "Advertising", "Utilities", "Salaries"]
@@ -109,6 +109,10 @@ def populate_twd_payment_details(conn, num_records=3):
     num_records = 20
     for i in range(num_records):
         payment_amount = round(random.uniform(100, 1000), 0)
+        income_amount = None
+        if random.random() < 0.5:
+            payment_amount = None
+            income_amount = random.randint(100, 1000)
         payment_memo = random.choice(payment_memos)
         charge_type = payment_memo_charge_map[payment_memo]
         payer = payer_info[i % len(payer_info)]
@@ -116,10 +120,10 @@ def populate_twd_payment_details(conn, num_records=3):
         month = random.randint(1, 4)
         day = random.randint(1, 22)
         transaction_date = f"2025-{month:02}-{day:02}"
-        company_key = random.choice(["6224", "6225", "6226"])
+        company_key = random.choices(["6224", "6225", "6226"], weights=[0.7, 0.15, 0.15], k=1)[0]
         account = random.choice(accounts)
         currency = account_currency_map[account]
-        values = (payment_amount, charge_type, payer, payee, transaction_date, company_key, payment_memo, account, currency)
+        values = (income_amount, payment_amount, charge_type, payer, payee, transaction_date, company_key, payment_memo, account, currency)
         cur.execute(sql, values)
     conn.commit()
     print("Populated 交易明細 table")
@@ -221,19 +225,29 @@ def export_to_csv(conn, table_name, filename):
 
         # Write to CSV file
         with open(filename, "w", newline="", encoding="utf-8-sig") as csvfile:
-            import csv
             csv_writer = csv.writer(csvfile)
             # Write header row
             csv_writer.writerow(column_names)
-            # Convert amount columns to integers
+            # Convert amount columns to integers where applicable
             new_rows = []
             for row in rows:
                 if table_name == "員工薪資":
-                    new_row = (row[0], row[1], int(row[2]), row[3], row[4], row[5], row[6], row[7])
+                    new_row = (row[0], row[1], int(row[2]) if row[2] is not None else None, row[3], row[4], row[5], row[6], row[7])
                 elif table_name == "部門資訊":
-                    new_row = (row[0], row[1], row[2], int(row[3]), row[4], row[5])
+                    new_row = (row[0], row[1], row[2], int(row[3]) if row[3] is not None else None, row[4], row[5])
                 elif table_name == "交易明細":
-                    new_row = (int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
+                    new_row = (
+                        int(row[0]) if row[0] is not None else None,  # 收入金額
+                        int(row[1]) if row[1] is not None else None,  # 付款金額
+                        row[2],  # 費用類型
+                        row[3],  # 付款人資訊
+                        row[4],  # 收款人資訊
+                        row[5],  # 交易日期
+                        row[6],  # 公司金鑰
+                        row[7],  # 備註
+                        row[8],  # 帳戶
+                        row[9]   # 幣別
+                    )
                 elif table_name == "匯率資料表":
                     new_row = (row[0], row[1], row[2], row[3], '6224')
                 elif table_name == "帳戶餘額表":
@@ -288,13 +302,14 @@ def main():
 
         twd_payment_details_table_sql = """
         CREATE TABLE IF NOT EXISTS 交易明細 (
+            收入金額 INTEGER,
             付款金額 REAL,
             費用類型 TEXT,
             付款人資訊 TEXT,
             收款人資訊 TEXT,
             交易日期 TEXT,
             公司金鑰 TEXT,
-            付款備註 TEXT,
+            備註 TEXT,
             帳戶 TEXT,
             幣別 TEXT
         );

@@ -23,15 +23,22 @@
   },
   "交易明細": {
     "columns": [
+      {"name": "收入金額", "type": "INTEGER", "nullable": true},
       {"name": "付款金額", "type": "REAL"},
       {"name": "費用類型", "type": "TEXT"},
       {"name": "付款人資訊", "type": "TEXT"},
       {"name": "收款人資訊", "type": "TEXT"},
       {"name": "交易日期", "type": "TEXT"},
       {"name": "公司金鑰", "type": "TEXT"},
-      {"name": "付款備註", "type": "TEXT"},
+      {"name": "備註", "type": "TEXT"},
       {"name": "帳戶", "type": "TEXT"},
       {"name": "幣別", "type": "TEXT"}
+    ],
+    "constraints": [
+      {
+        "type": "check",
+        "condition": "((付款金額 IS NULL) AND (收入金額 IS NOT NULL)) OR ((付款金額 IS NOT NULL) AND (收入金額 IS NULL))"
+      }
     ]
   },
   "匯率資料表": {
